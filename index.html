@@ -123,58 +123,237 @@
 </head>
 
 <body>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIMZX DEWA</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins;}
+body{background:#0a0a0a;color:white;}
+
+/* LOADING */
+#loading{
+  position:fixed;width:100%;height:100%;
+  background:black;display:flex;
+  justify-content:center;align-items:center;
+  z-index:999;color:red;font-size:30px;
+}
+
+/* HEADER */
+header{
+  display:flex;justify-content:space-between;
+  padding:15px 30px;position:fixed;width:100%;
+  background:rgba(0,0,0,0.8);
+}
+
+header h1{color:red;}
+input{padding:7px;border-radius:20px;border:none;}
+
+/* HERO */
+.hero{
+  height:80vh;
+  background:linear-gradient(to top,#000,transparent),url('bg.jpg');
+  background-size:cover;
+  display:flex;align-items:flex-end;
+  padding:40px;
+}
+
+/* ROW */
+.row{padding:20px;margin-top:80px;}
+.slider{display:flex;overflow-x:auto;}
+.card{
+  min-width:200px;height:300px;margin:10px;
+  background-size:cover;border-radius:10px;
+  cursor:pointer;transition:.3s;
+}
+.card:hover{transform:scale(1.1);}
+
+/* PLAYER */
+.player{
+  display:none;position:fixed;width:100%;height:100%;
+  background:black;justify-content:center;align-items:center;
+  z-index:20;
+}
+iframe{width:80%;height:80%;}
+.close{position:absolute;top:20px;right:30px;font-size:30px;color:red;cursor:pointer;}
+
+/* EPISODE LIST */
+.episodes{
+  position:fixed;bottom:0;width:100%;
+  background:#111;padding:15px;
+  display:none;overflow-x:auto;
+}
+.episodes button{
+  margin:5px;padding:10px;
+  background:red;color:white;border:none;
+}
+
+/* FAVORITE */
+ul{list-style:none;padding:10px;}
+
+/* LOGIN */
+.login{
+  display:none;position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:#111;padding:20px;border-radius:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="loading">CIMZX LOADING...</div>
 
 <header>
-  <h1>CIMZX OFFICIAL</h1>
-  <nav>
-    <a href="#">Home</a>
-    <a href="#">Anime</a>
-    <a href="#">About</a>
-    <button onclick="openLogin()">Login</button>
-  </nav>
+  <h1>CIMZX</h1>
+  <input type="text" placeholder="Search..." onkeyup="searchAnime(this.value)">
+  <button onclick="openLogin()">Login</button>
 </header>
 
-<section class="hero">
-  <div>
-    <h2>WELCOME TO CIMZX 🔥</h2>
-    <p>Website marketing + anime aesthetic</p>
-    <button class="btn" onclick="openLogin()">Masuk Sekarang</button>
-  </div>
-</section>
+<section class="hero"></section>
+
+<div class="row">
+  <h3>🔥 Anime</h3>
+  <div class="slider" id="list"></div>
+</div>
+
+<div>
+  <h3>❤️ Favorite</h3>
+  <ul id="fav"></ul>
+</div>
+
+<!-- PLAYER -->
+<div class="player" id="player">
+  <span class="close" onclick="closePlayer()">X</span>
+  <iframe id="video"></iframe>
+</div>
+
+<!-- EPISODE -->
+<div class="episodes" id="episodes"></div>
 
 <!-- LOGIN -->
-<div class="login-box" id="loginBox">
-  <span class="close" onclick="closeLogin()">X</span>
+<div class="login" id="login">
   <h3>Login</h3>
-  <input type="text" id="username" placeholder="Username">
-  <input type="password" id="password" placeholder="Password">
+  <input id="u"><br><br>
+  <input id="p" type="password"><br><br>
   <button onclick="login()">Masuk</button>
 </div>
 
-<footer>
-  © 2026 CIMZX OFFICIAL
-</footer>
-
 <script>
-function openLogin() {
-  document.getElementById("loginBox").style.display = "block";
+
+// DATA ANIME
+let animeData=[
+  {
+    title:"Naruto",
+    img:"https://i.imgur.com/1.jpg",
+    episodes:[
+      "https://www.mp4upload.com/embed-xxxx.html",
+      "https://www.mp4upload.com/embed-yyyy.html"
+    ]
+  },
+  {
+    title:"One Piece",
+    img:"https://i.imgur.com/2.jpg",
+    episodes:[
+      "https://www.mp4upload.com/embed-aaaa.html",
+      "https://www.mp4upload.com/embed-bbbb.html"
+    ]
+  }
+];
+
+// LOAD LIST
+let list=document.getElementById("list");
+animeData.forEach((a,i)=>{
+  let div=document.createElement("div");
+  div.className="card";
+  div.style.backgroundImage=`url(${a.img})`;
+  div.onclick=()=>showEpisodes(i);
+  list.appendChild(div);
+});
+
+// EPISODE
+function showEpisodes(i){
+  let epBox=document.getElementById("episodes");
+  epBox.innerHTML="";
+  animeData[i].episodes.forEach(ep=>{
+    let btn=document.createElement("button");
+    btn.textContent="Episode";
+    btn.onclick=()=>playAnime(ep);
+    epBox.appendChild(btn);
+  });
+  epBox.style.display="block";
 }
 
-function closeLogin() {
-  document.getElementById("loginBox").style.display = "none";
+// PLAYER
+function playAnime(link){
+  document.getElementById("player").style.display="flex";
+  document.getElementById("video").src=link;
+
+  localStorage.setItem("lastWatch",link);
 }
 
-function login() {
-  let user = document.getElementById("username").value;
-  let pass = document.getElementById("password").value;
+function closePlayer(){
+  document.getElementById("player").style.display="none";
+}
 
-  if(user === "admin" && pass === "12345") {
-    alert("Login Berhasil 🔥");
-    closeLogin();
-  } else {
-    alert("Salah ❌");
+// FAVORITE SAVE
+function addFav(name){
+  let fav=JSON.parse(localStorage.getItem("fav"))||[];
+  fav.push(name);
+  localStorage.setItem("fav",JSON.stringify(fav));
+  loadFav();
+}
+
+function loadFav(){
+  let fav=JSON.parse(localStorage.getItem("fav"))||[];
+  let ul=document.getElementById("fav");
+  ul.innerHTML="";
+  fav.forEach(f=>{
+    let li=document.createElement("li");
+    li.textContent=f;
+    ul.appendChild(li);
+  });
+}
+loadFav();
+
+// SEARCH
+function searchAnime(val){
+  let cards=document.querySelectorAll(".card");
+  cards.forEach((c,i)=>{
+    c.style.display=animeData[i].title.toLowerCase().includes(val)?"block":"none";
+  });
+}
+
+// LOGIN SAVE
+function login(){
+  if(u.value=="admin" && p.value=="12345"){
+    localStorage.setItem("login","true");
+    alert("Login sukses 🔥");
+    login.style.display="none";
+  }else alert("Salah");
+}
+function openLogin(){
+  document.getElementById("login").style.display="block";
+}
+
+// CONTINUE WATCH
+window.onload=()=>{
+  setTimeout(()=>document.getElementById("loading").style.display="none",2000);
+
+  let last=localStorage.getItem("lastWatch");
+  if(last){
+    if(confirm("Lanjut nonton terakhir?")){
+      playAnime(last);
+    }
   }
 }
+
 </script>
 
 </body>
