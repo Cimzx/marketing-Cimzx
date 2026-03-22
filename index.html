@@ -265,96 +265,51 @@ let animeData=[
       "https://www.mp4upload.com/embed-bbbb.html"
     ]
   }
-];
+<script>
 
-// LOAD LIST
-let list=document.getElementById("list");
-animeData.forEach((a,i)=>{
-  let div=document.createElement("div");
-  div.className="card";
-  div.style.backgroundImage=`url(${a.img})`;
-  div.onclick=()=>showEpisodes(i);
-  list.appendChild(div);
-});
+// KOMENTAR
+function sendComment(){
+  let user = firebase.auth().currentUser;
+  let text = document.getElementById("commentInput").value;
 
-// EPISODE
-function showEpisodes(i){
-  let epBox=document.getElementById("episodes");
-  epBox.innerHTML="";
-  animeData[i].episodes.forEach(ep=>{
-    let btn=document.createElement("button");
-    btn.textContent="Episode";
-    btn.onclick=()=>playAnime(ep);
-    epBox.appendChild(btn);
+  firebase.database().ref("comments").push({
+    user: user.email,
+    text: text
   });
-  epBox.style.display="block";
 }
 
-// PLAYER
-function playAnime(link){
-  document.getElementById("player").style.display="flex";
-  document.getElementById("video").src=link;
-
-  localStorage.setItem("lastWatch",link);
-}
-
-function closePlayer(){
-  document.getElementById("player").style.display="none";
-}
-
-// FAVORITE SAVE
-function addFav(name){
-  let fav=JSON.parse(localStorage.getItem("fav"))||[];
-  fav.push(name);
-  localStorage.setItem("fav",JSON.stringify(fav));
-  loadFav();
-}
-
-function loadFav(){
-  let fav=JSON.parse(localStorage.getItem("fav"))||[];
-  let ul=document.getElementById("fav");
+// LOAD KOMENTAR
+firebase.database().ref("comments").on("value",snap=>{
+  let ul=document.getElementById("comments");
   ul.innerHTML="";
-  fav.forEach(f=>{
+  snap.forEach(d=>{
     let li=document.createElement("li");
-    li.textContent=f;
+    li.textContent=d.val().user + ": " + d.val().text;
     ul.appendChild(li);
   });
-}
-loadFav();
+});
 
-// SEARCH
-function searchAnime(val){
-  let cards=document.querySelectorAll(".card");
-  cards.forEach((c,i)=>{
-    c.style.display=animeData[i].title.toLowerCase().includes(val)?"block":"none";
+// RATING
+function rate(num){
+  firebase.database().ref("rating").push(num);
+}
+
+// HITUNG RATING
+firebase.database().ref("rating").on("value",snap=>{
+  let total=0,count=0;
+  snap.forEach(d=>{
+    total+=d.val();
+    count++;
   });
-}
+  document.getElementById("ratingResult").innerText =
+    "Rating: " + (total/count).toFixed(1);
+});
 
-// LOGIN SAVE
-function login(){
-  if(u.value=="admin" && p.value=="12345"){
-    localStorage.setItem("login","true");
-    alert("Login sukses 🔥");
-    login.style.display="none";
-  }else alert("Salah");
-}
-function openLogin(){
-  document.getElementById("login").style.display="block";
-}
-
-// CONTINUE WATCH
-window.onload=()=>{
-  setTimeout(()=>document.getElementById("loading").style.display="none",2000);
-
-  let last=localStorage.getItem("lastWatch");
-  if(last){
-    if(confirm("Lanjut nonton terakhir?")){
-      playAnime(last);
-    }
-  }
+// VIP (SIMULASI)
+function buyVIP(){
+  let user = firebase.auth().currentUser;
+  firebase.database().ref("vip/"+user.uid).set(true);
+  alert("VIP Aktif 💎");
 }
 
 </script>
-
-</body>
-</html>
